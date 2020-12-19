@@ -1,0 +1,165 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quarkus-configmap
+data:
+  application.properties: |
+    quarkus.log.level=INFO
+    quarkus.datasource.username=quarkus_test
+    quarkus.datasource.password=quarkus_test
+    quarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/quarkus_test
+    #see https://quarkus.io/guides/hibernate-orm#hibernate-orm-in-development-mode
+    quarkus.hibernate-orm.database.generation=none
+    quarkus.hibernate-orm.sql-load-script=no-file
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: quarkus
+  name: quarkus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quarkus
+  template:
+    metadata:
+      labels:
+        app: quarkus
+    spec:
+      containers:
+      - name: quarkus
+        image: quarkus-orm
+        imagePullPolicy: Never
+        # env:
+        #   - name: QUARKUS_DATASOURCE_USERNAME
+        #     value: quarkus_test
+        #   - name: QUARKUS_DATASOURCE_PASSWORD
+        #     value: quarkus_test
+        #   - name: QUARKUS_DATASOURCE_JDBC_URL
+        #     value: jdbc:postgresql://postgres:5432/quarkus_test
+        #   - name: QUARKUS_HIBERNATE-ORM_DATABASE_GENERATION
+        #     value: none
+        #   - name: QUARKUS_HIBERNATE-ORM_SQL-LOAD-SCRIPT
+        #     value: no-file
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            memory: "8Mi"
+            cpu: "10m"
+          requests:
+            cpu: "10m"
+            memory: "8Mi"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /work/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: quarkus-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quarkus
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: quarkus
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-configmap
+data:
+  create.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+            CREATE SEQUENCE known_fruits_id_seq start 10 increment 1;
+            CREATE TABLE known_fruits (id int4 not null, name varchar(40), primary key (id));
+            INSERT INTO known_fruits(id, name) VALUES (1, 'Cherry');
+            INSERT INTO known_fruits(id, name) VALUES (2, 'Apple');
+            INSERT INTO known_fruits(id, name) VALUES (3, 'Banana');
+    EOSQL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13.1-alpine
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: POSTGRES_USER
+            value: quarkus_test
+          - name: POSTGRES_PASSWORD
+            value: quarkus_test
+          - name: POSTGRES_DB
+            value: quarkus_test
+        ports:
+        - name: db
+          containerPort: 5432
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: config-volume
+          configMap:
+            name: db-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  ports:
+  - name: db
+    port: 5432
+    protocol: TCP
+    targetPort: db
+  selector:
+    app: postgres
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+# apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quarkus
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: quarkus
+          servicePort: http
