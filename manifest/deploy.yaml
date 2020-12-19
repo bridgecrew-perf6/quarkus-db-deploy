@@ -31,8 +31,8 @@ spec:
     spec:
       containers:
       - name: quarkus
-        image: quarkus-orm
-        imagePullPolicy: Never
+        image: sokubedocker/quarkus-orm
+        imagePullPolicy: IfNotPresent
         # env:
         #   - name: QUARKUS_DATASOURCE_USERNAME
         #     value: quarkus_test
