@@ -1,6 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: quarkus-bad
+data:
+  application.properties: |
+    my.propr.1=toto
+    my.propr.2=titi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: quarkus-configmap
 data:
   application.properties: |
