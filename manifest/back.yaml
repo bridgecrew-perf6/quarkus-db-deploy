@@ -28,7 +28,7 @@ metadata:
     app: quarkus
   name: quarkus
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: quarkus
