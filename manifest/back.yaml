@@ -27,7 +27,7 @@ metadata:
   name: quarkus-secret
 type: Opaque
 data:
-  security.properties: cXVhcmt1cy5kYXRhc291cmNlLnVzZXJuYW1lPXF1YXJrdXNfdGVzdApxdWFya3VzLmRhdGFzb3VyY2UucGFzc3dvcmQ9cXVhcmt1c190ZXN0
+  security.properties: cXVhcmt1cy5kYXRhc291cmNlLnVzZXJuYW1lPXF1YXJrdXNfdXNlcgpxdWFya3VzLmRhdGFzb3VyY2UucGFzc3dvcmQ9cXVhcmt1c19wd2Q=
 ---
 apiVersion: apps/v1
 kind: Deployment

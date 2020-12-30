@@ -36,9 +36,9 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: POSTGRES_USER
-            value: quarkus_test
+            value: quarkus_user
           - name: POSTGRES_PASSWORD
-            value: quarkus_test
+            value: quarkus_pwd
           - name: POSTGRES_DB
             value: quarkus_test
         ports:
