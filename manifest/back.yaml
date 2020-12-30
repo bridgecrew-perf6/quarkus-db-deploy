@@ -13,13 +13,21 @@ metadata:
   name: quarkus-configmap
 data:
   application.properties: |
+    smallrye.config.locations=./secret/security.properties
     quarkus.log.level=INFO
     quarkus.datasource.username=quarkus_test
     quarkus.datasource.password=quarkus_test
     quarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/quarkus_test
-    #see https://quarkus.io/guides/hibernate-orm#hibernate-orm-in-development-mode
     quarkus.hibernate-orm.database.generation=none
     quarkus.hibernate-orm.sql-load-script=no-file
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: quarkus-secret
+type: Opaque
+data:
+  security.properties: cXVhcmt1cy5kYXRhc291cmNlLnVzZXJuYW1lPXF1YXJrdXNfdGVzdApxdWFya3VzLmRhdGFzb3VyY2UucGFzc3dvcmQ9cXVhcmt1c190ZXN0
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -66,10 +74,16 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /work/config
+        - name: secret-volume
+          mountPath: /work/secret
+          readOnly: true
       volumes:
         - name: config-volume
           configMap:
             name: quarkus-configmap
+        - name: secret-volume
+          secret:
+            secretName: quarkus-secret
 ---
 apiVersion: v1
 kind: Service
