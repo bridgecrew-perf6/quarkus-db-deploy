@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: quarkus-bad
 data:
-  application.properties: |
+  bad.properties: |
     my.propr.1=toto
     my.propr.2=titi
 ---
@@ -15,8 +15,6 @@ data:
   application.properties: |
     smallrye.config.locations=./secret/security.properties
     quarkus.log.level=INFO
-    quarkus.datasource.username=quarkus_test
-    quarkus.datasource.password=quarkus_test
     quarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/quarkus_test
     quarkus.hibernate-orm.database.generation=none
     quarkus.hibernate-orm.sql-load-script=no-file
@@ -26,8 +24,12 @@ kind: Secret
 metadata:
   name: quarkus-secret
 type: Opaque
-data:
-  security.properties: cXVhcmt1cy5kYXRhc291cmNlLnVzZXJuYW1lPXF1YXJrdXNfdXNlcgpxdWFya3VzLmRhdGFzb3VyY2UucGFzc3dvcmQ9cXVhcmt1c19wd2Q=
+stringData:
+  security.propertiex: |-
+    quarkus.datasource.username=quarkus_user
+    quarkus.datasource.password=quarkus_pwd
+# data:
+#   security.properties: cXVhcmt1cy5kYXRhc291cmNlLnVzZXJuYW1lPXF1YXJrdXNfdXNlcgpxdWFya3VzLmRhdGFzb3VyY2UucGFzc3dvcmQ9cXVhcmt1c19wd2Q=
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -36,7 +38,7 @@ metadata:
     app: quarkus
   name: quarkus
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: quarkus
