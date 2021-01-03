@@ -15,9 +15,12 @@ data:
   application.properties: |
     smallrye.config.locations=./secret/security.properties
     quarkus.log.level=INFO
+    # quarkus.log.category."io.quarkus.configuration".level=TRACE
+    # quarkus.log.category."io.quarkus.smallrye".level=TRACE
     quarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/quarkus_test
     quarkus.hibernate-orm.database.generation=none
     quarkus.hibernate-orm.sql-load-script=no-file
+    # quarkus.http.root-path=./q1/
 ---
 apiVersion: v1
 kind: Secret
@@ -49,7 +52,7 @@ spec:
     spec:
       containers:
       - name: quarkus
-        image: sokubedocker/quarkus-orm
+        image: sokubedocker/quarkus-orm:v1
         imagePullPolicy: IfNotPresent
         # env:
         #   - name: QUARKUS_DATASOURCE_USERNAME
