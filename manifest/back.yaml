@@ -20,7 +20,6 @@ data:
     quarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/quarkus_test
     quarkus.hibernate-orm.database.generation=none
     quarkus.hibernate-orm.sql-load-script=no-file
-    # quarkus.http.root-path=./q1/
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -40,30 +39,48 @@ spec:
     spec:
       containers:
       - name: quarkus
-        image: sokubedocker/quarkus-orm:v1
+        image: sokube/quarkus-orm:v2
         imagePullPolicy: IfNotPresent
         # env:
-        #   - name: QUARKUS_DATASOURCE_USERNAME
-        #     value: quarkus_test
-        #   - name: QUARKUS_DATASOURCE_PASSWORD
-        #     value: quarkus_test
-        #   - name: QUARKUS_DATASOURCE_JDBC_URL
-        #     value: jdbc:postgresql://postgres:5432/quarkus_test
-        #   - name: QUARKUS_HIBERNATE-ORM_DATABASE_GENERATION
-        #     value: none
-        #   - name: QUARKUS_HIBERNATE-ORM_SQL-LOAD-SCRIPT
-        #     value: no-file
+        # - name: QUARKUS_LOG_LEVEL
+        #   value: DEBUG
+        # - name: QUARKUS_DATASOURCE_USERNAME
+        #   value: quarkus_user
+        # - name: QUARKUS_DATASOURCE_PASSWORD
+        #   value: quarkus_pwd
+        # - name: QUARKUS_DATASOURCE_JDBC_URL
+        #   value: jdbc:postgresql://postgres:5432/quarkus_test
+        # - name: QUARKUS_HIBERNATE-ORM_DATABASE_GENERATION
+        #   value: none
+        # - name: QUARKUS_HIBERNATE-ORM_SQL-LOAD-SCRIPT
+        #   value: no-file
         ports:
         - name: http
           containerPort: 8080
           protocol: TCP
         resources:
-          limits:
-            memory: "8Mi"
-            cpu: "10m"
           requests:
             cpu: "10m"
             memory: "8Mi"
+          limits:
+            memory: "8Mi"
+            cpu: "10m"
+        livenessProbe:
+          httpGet:
+            path: /q/health/live
+            port: http
+        #   failureThreshold: 5
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /q/health/ready
+            port: http
+        #   failureThreshold: 5
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   timeoutSeconds: 10
         volumeMounts:
         - name: config-volume
           mountPath: /work/config
@@ -93,18 +110,21 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
-# apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: quarkus
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: traefik
+    # traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
   - http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: quarkus
-          servicePort: http
+          service:
+            name: quarkus
+            port:
+              name: http

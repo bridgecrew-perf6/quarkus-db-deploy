@@ -41,6 +41,13 @@ spec:
             value: quarkus_pwd
           - name: POSTGRES_DB
             value: quarkus_test
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "32Mi"
+          limits:
+            memory: "32Mi"
+            cpu: "100m"
         ports:
         - name: db
           containerPort: 5432

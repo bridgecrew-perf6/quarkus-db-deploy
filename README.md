@@ -1,5 +1,9 @@
 # quarkus-db-deploy
 
+# create cluster
+
+k3d cluster create dev --api-port 6443 --port 80:80@loadbalancer --port 443:443@loadbalancer
+
 
 # Sealed Secret
 
